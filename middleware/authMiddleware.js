@@ -1,20 +1,34 @@
 const jwt = require('jsonwebtoken');
+const db = require('../db');
 require('dotenv').config();
 
-const authMiddleware = (req, res, next) => {
-    const token = req.headers['authorization'];
+const authMiddleware = async (req, res, next) => {
+    const authHeader = req.headers['authorization'];
 
-    if (!token) {
-        return res.status(403).json({ error: 'No token provided' });
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(403).json({ error: 'No token provided or token format invalid' });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        const tokenRecord = await db('Tokens')
+            .where({ token })
+            .where('expires_at', '>', new Date())
+            .first();
+
+        if (!tokenRecord) {
+            return res.status(401).json({ error: 'Unauthorized: Token not found or expired' });
         }
-        req.userId = decoded.id;
+
+        req.userId = decoded.userId;
         next();
-    });
+    } catch (err) {
+        console.error('Token verification error:', err);
+        return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+    }
 };
 
 module.exports = authMiddleware;

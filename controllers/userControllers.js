@@ -7,7 +7,7 @@ const SALT_ROUNDS = 10;
 const TABLE_NAME = 'Users';
 
 exports.createUser = async (req, res) => {
-    const { username, password, email } = req.body;
+    const { username, password, email, fullname } = req.body;
     
     try {
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
@@ -15,35 +15,14 @@ exports.createUser = async (req, res) => {
         const [newUser] = await db(TABLE_NAME).insert({
             username,
             password: hashedPassword,
-            email
+            email,
+            fullname
         }).returning('*');
 
         res.status(201).json(newUser);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Unable to create user' });
-    }
-};
-
-exports.loginUser = async (req, res) => {
-    const { username, password } = req.body;
-
-    try {
-        const user = await db(TABLE_NAME).where({ username }).first();
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(401).json({ error: 'Invalid password' });
-        }
-
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({ token });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Unable to login' });
     }
 };
 
@@ -71,5 +50,38 @@ exports.getUserById = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Unable to fetch user' });
+    }
+};
+
+exports.loginUser = async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        const user = await db('Users').where({ username }).first();
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Invalid password' });
+        }
+
+        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        const now = new Date();
+        const expiresAt = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour later
+
+        await db('Tokens').insert({
+            user_id: user.id,
+            token: token,
+            expires_at: expiresAt,
+            created_at: now
+        });
+
+        res.json({ token });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Unable to login' });
     }
 };
