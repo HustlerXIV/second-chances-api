@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "migrate-latest": "npx knex migrate:latest"
+    "migrate-latest": "npx knex migrate:latest",
+    "rollback": "npx knex migrate:rollback --all"
   },
   "keywords": [],
   "author": "",
