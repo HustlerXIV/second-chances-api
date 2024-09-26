@@ -12,7 +12,8 @@ exports.up = function(knex) {
                     table.string('username').unique().notNullable();
                     table.string('password').notNullable();
                     table.string('email').unique().notNullable();
-                    table.string('fullname').notNullable();
+                    table.string('firstname').notNullable();
+                    table.string('lastname').notNullable();
                     table.timestamp('created_at').defaultTo(knex.fn.now());
                     table.timestamp('updated_at').defaultTo(knex.fn.now());
                 });

@@ -7,7 +7,7 @@ const SALT_ROUNDS = 10;
 const TABLE_NAME = 'Users';
 
 exports.createUser = async (req, res) => {
-    const { username, password, email, fullname } = req.body;
+    const { username, password, email, firstname, lastname } = req.body;
     
     try {
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
@@ -16,7 +16,8 @@ exports.createUser = async (req, res) => {
             username,
             password: hashedPassword,
             email,
-            fullname
+            firstname,
+            lastname
         }).returning('*');
 
         res.status(201).json(newUser);
