@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "migrate-latest": "npx knex migrate:latest",
-    "rollback": "npx knex migrate:rollback --all"
+    "rollback": "npx knex migrate:rollback --all",
+    "seed": "npx knex seed:run"
   },
   "keywords": [],
   "author": "",

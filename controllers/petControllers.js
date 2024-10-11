@@ -44,6 +44,31 @@ exports.getAllPets = async (req, res) => {
   const offset = (page - 1) * limit;
 
   try {
+    let countQuery = db(TABLE_NAME);
+
+    if (name) {
+      countQuery = countQuery.where("name", "ILIKE", `%${name}%`);
+    }
+
+    if (species) {
+      countQuery = countQuery.where("species", "ILIKE", `%${species}%`);
+    }
+
+    if (breed) {
+      countQuery = countQuery.where("breed", "ILIKE", `%${breed}%`);
+    }
+
+    if (age) {
+      countQuery = countQuery.where("age", "ILIKE", `%${age}%`);
+    }
+
+    if (pet_status) {
+      countQuery = countQuery.where("pet_status", "ILIKE", `%${pet_status}%`);
+    }
+
+    const totalPetsResult = await countQuery.count("id as count").first();
+    const totalPets = totalPetsResult.count;
+
     let query = db(TABLE_NAME).select("*");
 
     if (name) {
@@ -66,15 +91,15 @@ exports.getAllPets = async (req, res) => {
       query = query.where("pet_status", "ILIKE", `%${pet_status}%`);
     }
 
-    query = query.orderBy(sort_by, order);
-
-    const pets = await query.limit(limit).offset(offset);
-    const totalPets = await db(TABLE_NAME).count("id as count").first();
+    const pets = await query
+      .orderBy(sort_by, order)
+      .limit(limit)
+      .offset(offset);
 
     res.status(200).json({
       currentPage: parseInt(page),
-      totalPages: Math.ceil(totalPets.count / limit),
-      totalPets: totalPets.count,
+      totalPages: Math.ceil(totalPets / limit),
+      totalPets: totalPets,
       pets,
     });
   } catch (error) {
