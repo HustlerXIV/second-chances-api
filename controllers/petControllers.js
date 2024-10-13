@@ -207,3 +207,22 @@ exports.deletePetById = async (req, res) => {
     res.status(500).json({ error: "Unable to delete pet" });
   }
 };
+
+exports.getAllMyPets = async (req, res) => {
+  try {
+    const userIdFromToken = req.userId;
+
+    const data = await db(TABLE_NAME)
+      .where("user_id", userIdFromToken)
+      .orderBy("updated_at", "desc");
+
+    if (!data || data.length === 0) {
+      return res.status(200).json({ data: [] });
+    }
+
+    res.status(200).json({ data });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Unable to fetch pets" });
+  }
+};
