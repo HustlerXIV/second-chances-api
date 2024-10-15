@@ -7,6 +7,8 @@ router.post("/", authMiddleware, petsController.createPet);
 
 router.get("/", petsController.getAllPets);
 
+router.get("/all-my-pets", authMiddleware, petsController.getAllMyPets);
+
 router.get("/:id", petsController.getPetById);
 
 router.put("/:id", authMiddleware, petsController.editPetById);
