@@ -9,9 +9,17 @@ router.get("/", petsController.getAllPets);
 
 router.get("/all-my-pets", authMiddleware, petsController.getAllMyPets);
 
+router.get(
+  "/all-my-adopted-pets",
+  authMiddleware,
+  petsController.getAllAdoptedPets
+);
+
 router.get("/:id", petsController.getPetById);
 
 router.put("/:id", authMiddleware, petsController.editPetById);
+
+router.put("/adopt/:id", authMiddleware, petsController.adoptPet);
 
 router.delete("/:id", authMiddleware, petsController.deletePetById);
 

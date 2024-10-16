@@ -25,6 +25,11 @@ exports.up = function (knex) {
         return knex.schema.createTable("Pets", function (table) {
           table.increments("id").primary();
           table.integer("user_id").references("id").inTable("Users");
+          table
+            .integer("adopted_by")
+            .nullable()
+            .references("id")
+            .inTable("Users");
           table.string("name").notNullable();
           table.string("species").notNullable();
           table.string("breed");

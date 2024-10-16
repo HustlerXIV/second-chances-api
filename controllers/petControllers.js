@@ -226,3 +226,47 @@ exports.getAllMyPets = async (req, res) => {
     res.status(500).json({ error: "Unable to fetch pets" });
   }
 };
+
+exports.getAllAdoptedPets = async (req, res) => {
+  try {
+    const userIdFromToken = req.userId;
+
+    const data = await db(TABLE_NAME).where("adopted_by", userIdFromToken);
+
+    if (!data || data.length === 0) {
+      return res.status(200).json({ data: [] });
+    }
+
+    res.status(200).json({ data });
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ error: "Unable to fetch pets" });
+  }
+};
+
+exports.adoptPet = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const userIdFromToken = req.userId;
+    const pet = await db(TABLE_NAME).where({ id }).first();
+
+    if (!pet) {
+      return res.status(404).json({ error: "Pet not found" });
+    }
+
+    await db(TABLE_NAME).where({ id }).update({
+      adopted_by: userIdFromToken,
+      pet_status: "adopted",
+      updated_at: new Date(),
+    });
+
+    res.status(200).json({ message: "Pet updated successfully" });
+  } catch (error) {
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+    console.error(error);
+    res.status(500).json({ error: "Unable to edit pet" });
+  }
+};
