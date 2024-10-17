@@ -8,7 +8,12 @@ const port = 3001;
 
 app.use(bodyParser.json());
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://second-chances-gj5tcyngp-hustlerxivs-projects.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  })
+);
 
 app.use("/api", routes);
 
